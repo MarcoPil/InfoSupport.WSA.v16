@@ -13,3 +13,4 @@ namespace InfoSupport.WSA.Common
         void Execute(Command command);
         Task ExecuteAsync(Command command);
     }
+}
