@@ -16,7 +16,7 @@ namespace InfoSupport.WSA.Common
         public string RoutingKey { get; private set; }
 
         /// <summary>
-        /// The Timestamp has been set to the creation time of the domain event.
+        /// The Timestamp is set to the creation time of the domain event.
         /// </summary>
         [JsonProperty]
         public long Timestamp { get; private set; }

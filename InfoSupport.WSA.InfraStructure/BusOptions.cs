@@ -1,5 +1,8 @@
 ﻿namespace InfoSupport.WSA.Infrastructure
 {
+    /// <summary>
+    /// The BusOptions are used for configuring a connection to RabbitMQ.
+    /// </summary>
     public class BusOptions
     {
         /// <summary>
