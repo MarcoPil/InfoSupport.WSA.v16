@@ -10,8 +10,7 @@ namespace InfoSupport.WSA.Infrastructure
     {
         private IConnection _connection;
         protected IModel Channel;
-
-        public BusOptions BusOptions { get; set; }
+        public BusOptions BusOptions { get; }
 
         public EventBusBase(BusOptions options = null)
         {

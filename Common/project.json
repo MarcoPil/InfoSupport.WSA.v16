@@ -14,5 +14,18 @@
     "netstandard1.6": {
       "imports": "dnxcore50"
     }
+  },
+
+  "packOptions": {
+    "summary": "Support for an event bus on top of RabbitMQ",
+    "tags": [ "event bus", "event driven architecture" ],
+    "owners": [ "Marco Pil" ]
+  },
+
+  "scripts": {
+    "postcompile": [
+      "dotnet pack -o C:\\_localNugetFeed --no-build --configuration %compile:Configuration%"
+    ]
   }
+
 }

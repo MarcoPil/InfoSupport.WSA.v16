@@ -9,7 +9,7 @@ namespace InfoSupport.WSA.Infrastructure
 
     public class EventPublisher : EventBusBase, IEventPublisher
     {
-        public EventPublisher(BusOptions options = null) : base(options) {}
+        public EventPublisher(BusOptions options = null) : base(options) { }
 
         public void Publish(DomainEvent domainEvent)
         {

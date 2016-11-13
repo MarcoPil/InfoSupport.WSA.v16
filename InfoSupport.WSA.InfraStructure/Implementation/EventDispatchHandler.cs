@@ -22,8 +22,7 @@ namespace InfoSupport.WSA.Infrastructure
 
         internal void DispatchEvent(string jsonMessage)
         {
-            var settings = new JsonSerializerSettings();
-            var domainEvent = JsonConvert.DeserializeObject(jsonMessage, _paramType, settings);
+            var domainEvent = JsonConvert.DeserializeObject(jsonMessage, _paramType);
 
             _method.Invoke(_instance, new object[] { domainEvent });
         }

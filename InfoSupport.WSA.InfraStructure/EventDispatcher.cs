@@ -17,14 +17,23 @@ namespace InfoSupport.WSA.Infrastructure
         public EventDispatcher(BusOptions options = null) : base(options)
         {
             DispatcherModel = new DispatcherModel();
-            CreateDispatcherModel();
+            PopulateDispatcherModel();
 
             StartListening(BusOptions.QueueName);
         }
 
-        private void CreateDispatcherModel()
+        private void PopulateDispatcherModel()
         {
             var customType = this.GetType();
+
+            // Populate Routing Keys
+            var routingKeyAttrs = customType.GetTypeInfo().GetCustomAttributes<RoutingKeyAttribute>();
+            foreach (var attr in routingKeyAttrs)
+            {
+                DispatcherModel.AddRoutingKey(attr.RoutingKey);
+            }
+
+            // Populate Event Handlers
             var customMethods = customType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
             foreach (var method in customMethods)
             {
@@ -51,9 +60,21 @@ namespace InfoSupport.WSA.Infrastructure
                 Channel.QueueDeclare(queue: queueName);
             }
 
-            Channel.QueueBind(exchange: BusOptions.ExchangeName,
-                              queue: queueName,
-                              routingKey: "#");
+            if (DispatcherModel.RoutingKeys.Count() == 0)
+            {
+                Channel.QueueBind(exchange: BusOptions.ExchangeName,
+                                  queue: queueName,
+                                  routingKey: "#");
+            }
+            else
+            {
+                foreach (var routingKey in DispatcherModel.RoutingKeys)
+                {
+                    Channel.QueueBind(exchange: BusOptions.ExchangeName,
+                                      queue: queueName,
+                                      routingKey: routingKey);
+                }
+            }
 
             var consumer = new EventingBasicConsumer(Channel);
             consumer.Received += EventReceived;
