@@ -4,6 +4,8 @@
   },
 
   "version": "1.0.0-*",
+  "title": "InfoSupport.WSA.Common",
+  "authors": [ "Marco Pil" ],
 
   "dependencies": {
     "NETStandard.Library": "1.6.0",
@@ -19,7 +21,8 @@
   "packOptions": {
     "summary": "Support for an event bus on top of RabbitMQ",
     "tags": [ "event bus", "event driven architecture" ],
-    "owners": [ "Marco Pil" ]
+    "owners": [ "Info Support" ],
+    "iconUrl": "http://www.freeiconspng.com/uploads/bus-icon-27.png",
   },
 
   "scripts": {

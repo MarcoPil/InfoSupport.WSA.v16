@@ -30,11 +30,13 @@ namespace InfoSupport.WSA.Infrastructure.Test
 
                 var eventEmitted = false;
                 BasicDeliverEventArgs receivedEvent = null;
+                var handle = new AutoResetEvent(false);
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (object sender, BasicDeliverEventArgs e) =>
                 {
                     eventEmitted = true;
                     receivedEvent = e;
+                    handle.Set();
                 };
 
                 channel.BasicConsume(queue: "TestQueue",
@@ -49,13 +51,19 @@ namespace InfoSupport.WSA.Infrastructure.Test
 
                     // Act
                     target.Publish(sendEvent);
-                    Thread.Sleep(100);
 
-                    // Assert
-                    Assert.True(eventEmitted);
-                    Assert.NotNull(receivedEvent);
-                    Assert.Equal(new AmqpTimestamp(sendEvent.Timestamp), receivedEvent.BasicProperties.Timestamp);
-                    Assert.Equal("InfoSupport.WSA.Infrastructure.Test.TestEvent", receivedEvent.BasicProperties.Type);
+                    if (handle.WaitOne(2000))
+                    {
+                        // Assert
+                        Assert.True(eventEmitted);
+                        Assert.NotNull(receivedEvent);
+                        Assert.Equal(new AmqpTimestamp(sendEvent.Timestamp), receivedEvent.BasicProperties.Timestamp);
+                        Assert.Equal("InfoSupport.WSA.Infrastructure.Test.TestEvent", receivedEvent.BasicProperties.Type);
+                    }
+                    else
+                    {
+                        Assert.True(false,"Event has not been received before time out (2000ms)");
+                    }
                 }
             }
         }

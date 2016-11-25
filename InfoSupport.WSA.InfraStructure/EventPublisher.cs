@@ -6,7 +6,10 @@ using System.Text;
 
 namespace InfoSupport.WSA.Infrastructure
 {
-
+    /// <summary>
+    /// An EventPublisher publishes a domain event on the event bus (configured by the BusOptions).
+    /// Each EventPublisher creates its own connection to rabbitMQ.
+    /// </summary>
     public class EventPublisher : EventBusBase, IEventPublisher
     {
         /// <summary>

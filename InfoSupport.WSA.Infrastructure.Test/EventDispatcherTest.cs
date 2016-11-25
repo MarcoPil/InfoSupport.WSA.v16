@@ -15,7 +15,6 @@ namespace InfoSupport.WSA.Infrastructure.Test
         {
             using (var result = new EventDispatcherMock())
             {
-
                 Assert.Equal(2, result.DispatcherModel.Handlers.Count());
             }
         }

@@ -7,8 +7,8 @@ namespace InfoSupport.WSA.Infrastructure
     {
         private Dictionary<string, DispatchHandler> _handlers;
         private List<string> _routingKeys;
-        public IEnumerable<string> Handlers { get { return _handlers.Keys; } }
-        public IEnumerable<string> RoutingKeys { get { return _routingKeys; } }
+        public IEnumerable<string> Handlers => _handlers.Keys;
+        public IEnumerable<string> RoutingKeys => _routingKeys;
 
         public DispatcherModel()
         {
