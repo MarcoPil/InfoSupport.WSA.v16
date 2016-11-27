@@ -1,18 +1,37 @@
-﻿using System;
+﻿using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace InfoSupport.WSA.Infrastructure
 {
-    public class MicroserviceHost<T> : IDisposable
+    public class MicroserviceHost<T> : EventBusBase
+        where T: class, new()
     {
+        private T _instance;
+
         public ServiceModel<T> ServiceModel { get; private set; }
 
-        public MicroserviceHost()
+        public MicroserviceHost(T serviceMock = null)
         {
+            _instance = serviceMock ?? new T();
             ServiceModel = new ServiceModel<T>();
+            AddQueueNamesToServiceModel();
             AddCommandHandlersToServiceModel();
+            StartListening();
+        }
+
+        private void AddQueueNamesToServiceModel()
+        {
+            var queueNames = from Interface in AllInterfacesOf<T>()
+                             let queueName = Interface.GetTypeInfo().GetCustomAttributes<MicroserviceAttribute>().FirstOrDefault()?.QueueName
+                             where queueName != null
+                             select queueName;
+
+            ServiceModel.Add(queueNames);
         }
 
         private void AddCommandHandlersToServiceModel()
@@ -46,8 +65,27 @@ namespace InfoSupport.WSA.Infrastructure
         }
         #endregion PopulateDispatcherModel() - helper methods
 
-        public void Dispose()
+        private void StartListening()
         {
+            foreach (var queueName in ServiceModel.QueueNames)
+            {
+                Channel.QueueDeclare(queue:queueName, 
+                                     durable:false, exclusive:false, autoDelete:false, arguments:null);
+
+                var consumer = new EventingBasicConsumer(Channel);
+                consumer.Received += EventReceived;
+
+                Channel.BasicConsume(queue: queueName,
+                                     noAck: true,
+                                     consumer: consumer);
+            }
+        }
+
+        private void EventReceived(object sender, BasicDeliverEventArgs e)
+        {
+            var eventType = e.BasicProperties.Type;
+            var message = Encoding.UTF8.GetString(e.Body);
+            ServiceModel.DispatchCall(_instance, eventType, message);
         }
     }
 }

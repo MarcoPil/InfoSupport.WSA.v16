@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace InfoSupport.WSA.Infrastructure.Test.dummies
 {
-    [Microservice]
+    [Microservice("microserviceQueue")]
     interface ISomeMicroserviceMock
     {
         void TestCommandHandler(TestCommand command);

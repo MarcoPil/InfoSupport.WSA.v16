@@ -8,12 +8,15 @@ namespace InfoSupport.WSA.Infrastructure
     public class ServiceModel<T>
     {
         private Dictionary<string, CommandHandler<T>> _handlers;
+        private List<string> _queueNames;
 
         public IEnumerable<string> Handlers => _handlers.Keys;
+        public IEnumerable<string> QueueNames => _queueNames;
 
         public ServiceModel()
         {
             _handlers = new Dictionary<string, CommandHandler<T>>();
+            _queueNames = new List<string>();
         }
 
         internal void Add(IEnumerable<KeyValuePair<string, CommandHandler<T>>> commandHandlerList)
@@ -21,6 +24,19 @@ namespace InfoSupport.WSA.Infrastructure
             foreach (var handler in commandHandlerList)
             {
                 _handlers.Add(handler.Key, handler.Value);
+            }
+        }
+
+        internal void Add(IEnumerable<string> queueNames)
+        {
+            _queueNames.AddRange(queueNames);
+        }
+
+        internal void DispatchCall(T instance, string eventName, string jsonMessage)
+        {
+            if (_handlers.ContainsKey(eventName))
+            {
+                _handlers[eventName].DispatchCall(instance, jsonMessage);
             }
         }
     }
