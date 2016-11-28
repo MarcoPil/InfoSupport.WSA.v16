@@ -27,9 +27,12 @@ namespace InfoSupport.WSA.Infrastructure
             }
         }
 
-        internal void Add(IEnumerable<string> queueNames)
+        internal void AddIfNotEmpty(string queueName)
         {
-            _queueNames.AddRange(queueNames);
+            if (queueName != null)
+            {
+                _queueNames.Add(queueName);
+            }
         }
 
         internal void DispatchCall(T instance, string eventName, string jsonMessage)

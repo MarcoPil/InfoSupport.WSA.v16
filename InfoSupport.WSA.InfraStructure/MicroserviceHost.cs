@@ -30,18 +30,16 @@ namespace InfoSupport.WSA.Infrastructure
         private void AddQueueNamesToServiceModel()
         {
             // gather queue names from [MicroService(queueName)]-attributes
-            var queueNames = from Interface in AllInterfacesOf<T>()
-                             let queueName = Interface.GetTypeInfo().GetCustomAttributes<MicroserviceAttribute>().FirstOrDefault()?.QueueName
-                             where queueName != null
-                             select queueName;
-            ServiceModel.Add(queueNames);
-
-            // gather queue name from BusOptions
-            if (BusOptions.QueueName != null)
+            foreach (var Interface in AllInterfacesOf<T>())
             {
-                ServiceModel.Add(new string[] { BusOptions.QueueName } );
+                var attrs = Interface.GetTypeInfo().GetCustomAttributes<MicroserviceAttribute>();
+                if (attrs.Any())
+                {
+                    ServiceModel.AddIfNotEmpty(attrs.First().QueueName);
+                }
             }
-
+            // gather queue name from BusOptions
+            ServiceModel.AddIfNotEmpty(BusOptions.QueueName);
         }
 
         private void AddCommandHandlersToServiceModel()
