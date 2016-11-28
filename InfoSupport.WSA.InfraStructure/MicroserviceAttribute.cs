@@ -7,7 +7,7 @@ namespace InfoSupport.WSA.Infrastructure
     {
         public string QueueName { get; }
 
-        public MicroserviceAttribute(string queueName)
+        public MicroserviceAttribute(string queueName = null)
         {
             QueueName = queueName;
         }

@@ -15,9 +15,12 @@ namespace InfoSupport.WSA.Infrastructure
 
         public ServiceModel<T> ServiceModel { get; private set; }
 
-        public MicroserviceHost(T serviceMock = null)
+        public MicroserviceHost() : this(null, null) { }
+        public MicroserviceHost(T singletonInstance) : this(singletonInstance, null) { }
+        public MicroserviceHost(BusOptions busOptions) : this(null, busOptions) { }
+        public MicroserviceHost(T singletonInstance, BusOptions busOptions) : base(busOptions)
         {
-            _instance = serviceMock ?? new T();
+            _instance = singletonInstance;
             ServiceModel = new ServiceModel<T>();
             AddQueueNamesToServiceModel();
             AddCommandHandlersToServiceModel();
@@ -26,12 +29,19 @@ namespace InfoSupport.WSA.Infrastructure
 
         private void AddQueueNamesToServiceModel()
         {
+            // gather queue names from [MicroService(queueName)]-attributes
             var queueNames = from Interface in AllInterfacesOf<T>()
                              let queueName = Interface.GetTypeInfo().GetCustomAttributes<MicroserviceAttribute>().FirstOrDefault()?.QueueName
                              where queueName != null
                              select queueName;
-
             ServiceModel.Add(queueNames);
+
+            // gather queue name from BusOptions
+            if (BusOptions.QueueName != null)
+            {
+                ServiceModel.Add(new string[] { BusOptions.QueueName } );
+            }
+
         }
 
         private void AddCommandHandlersToServiceModel()
@@ -83,9 +93,10 @@ namespace InfoSupport.WSA.Infrastructure
 
         private void EventReceived(object sender, BasicDeliverEventArgs e)
         {
+            var instance = _instance ?? new T();    // InstanceContext=SingleCall
             var eventType = e.BasicProperties.Type;
             var message = Encoding.UTF8.GetString(e.Body);
-            ServiceModel.DispatchCall(_instance, eventType, message);
+            ServiceModel.DispatchCall(instance, eventType, message);
         }
     }
 }

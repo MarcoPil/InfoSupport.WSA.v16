@@ -36,9 +36,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             }
         }
 
-
         [Fact]
-        public void MicroserviceHostFindsQueueName()
+        public void MicroserviceHostFindsQueueNameInAttribute()
         {
             var serviceMock = new SomeMicroserviceMock();
             using (var host = new MicroserviceHost<SomeMicroserviceMock>(serviceMock))
@@ -50,36 +49,63 @@ namespace InfoSupport.WSA.Infrastructure.Test
 
 
         [Fact]
+        public void MicroserviceHostFindsQueueNameInBusOptions()
+        {
+            var options = new BusOptions { QueueName = "ThrowAwayName" };
+            using (var host = new MicroserviceHost<OtherMicroserviceMock>(options))
+            {
+                Assert.Equal(1, host.ServiceModel.QueueNames.Count());
+                Assert.True(host.ServiceModel.QueueNames.Contains("ThrowAwayName"));
+            }
+        }
+
+        [Fact]
         public void MicroserviceHostReceivesCommands()
         {
             var serviceMock = new SomeMicroserviceMock();
             using (var host = new MicroserviceHost<SomeMicroserviceMock>(serviceMock))
             {
-                SendMessage();
+                var options = new BusOptions() { QueueName = "microserviceQueue" };
+                var command = new SomeCommand() { SomeValue = "teststring" };
+                SendMessage(command, options);
                 Thread.Sleep(500);
 
                 Assert.True(serviceMock.SomeCommandHandlerHasBeenCalled);
+                Assert.False(serviceMock.TestCommandHandlerHasBeenCalled);
             }
         }
 
-        private void SendMessage()
+        [Fact]
+        public void MicroserviceHostSilentlyIgnoresUnknownCommands()
         {
-            var BusOptions = new BusOptions() { QueueName = "microserviceQueue" };
+            var serviceMock = new SomeMicroserviceMock();
+            using (var host = new MicroserviceHost<SomeMicroserviceMock>(serviceMock))
+            {
+                var options = new BusOptions() { QueueName = "microserviceQueue" };
+                var command = new KeyValuePair<string, int>("Test", 42);
+                SendMessage(command, options);
+                Thread.Sleep(500);
 
+                Assert.False(serviceMock.SomeCommandHandlerHasBeenCalled);
+                Assert.False(serviceMock.TestCommandHandlerHasBeenCalled);
+            }
+        }
+
+        private void SendMessage(object command, BusOptions busOptions)
+        {
             var factory = new ConnectionFactory()
             {
-                HostName = BusOptions.HostName,
-                Port = BusOptions.Port,
-                UserName = BusOptions.UserName,
-                Password = BusOptions.Password,
+                HostName = busOptions.HostName,
+                Port = busOptions.Port,
+                UserName = busOptions.UserName,
+                Password = busOptions.Password,
             };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.QueueDeclare(queue: BusOptions.QueueName,
+                channel.QueueDeclare(queue: busOptions.QueueName,
                                      durable: false, exclusive: false, autoDelete: false, arguments: null);
 
-                var command = new SomeCommand() { SomeValue = "teststring" };
                 // set metadata
                 var props = channel.CreateBasicProperties();
                 props.Type = command.GetType().FullName;
@@ -88,7 +114,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var buffer = Encoding.UTF8.GetBytes(message);
 
                 channel.BasicPublish(exchange: "",
-                                     routingKey: BusOptions.QueueName,
+                                     routingKey: busOptions.QueueName,
                                      basicProperties: props,
                                      body: buffer);
             }
