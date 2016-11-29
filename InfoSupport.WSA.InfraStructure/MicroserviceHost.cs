@@ -60,7 +60,14 @@ namespace InfoSupport.WSA.Infrastructure
                     new CommandHandler<T>(interfaceMethod, commandType)
                 );
 
-                ServiceModel.Add(commandHandlerList);
+                if (commandHandlerList.Any())
+                {
+                    ServiceModel.Add(commandHandlerList);
+                }
+                else
+                {
+                    throw new MicroserviceConfigurationException("No Handlers can be found In the Microservice Interface.");
+                }
             }
             else
             {

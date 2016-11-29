@@ -132,5 +132,19 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 });
             Assert.Equal("No [MicroService] interfaces have been found.", ex.Message);
         }
+
+        [Fact]
+        public void MicroserviceHostWithoutHandlersFails()
+        {
+            var serviceMock = new EmptyServiceMock();
+            MicroserviceConfigurationException ex =
+                Assert.Throws<MicroserviceConfigurationException>(() =>
+                {
+                    using (var host = new MicroserviceHost<EmptyServiceMock>(serviceMock))
+                    {
+                    }
+                });
+            Assert.Equal("No Handlers can be found In the Microservice Interface.", ex.Message);
+        }
     }
 }
