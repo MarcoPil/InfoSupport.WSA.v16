@@ -119,5 +119,18 @@ namespace InfoSupport.WSA.Infrastructure.Test
                                      body: buffer);
             }
         }
+
+        [Fact]
+        public void MicroserviceHostWithoutMicroServiceAttributeFails()
+        {
+            MicroserviceConfigurationException ex = 
+                Assert.Throws<MicroserviceConfigurationException>( () =>
+                {
+                    using (var host = new MicroserviceHost<BusOptions>())
+                    {
+                    }
+                });
+            Assert.Equal("No [MicroService] interfaces have been found.", ex.Message);
+        }
     }
 }

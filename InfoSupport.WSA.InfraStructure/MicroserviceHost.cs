@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using Newtonsoft.Json;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Generic;
@@ -44,19 +45,27 @@ namespace InfoSupport.WSA.Infrastructure
 
         private void AddCommandHandlersToServiceModel()
         {
-            var commandHandlerList =
-                from Interface in AllInterfacesOf<T>()
-                where HasMicroserviceAttribute(Interface)
+            var microserviceInterfaces = AllInterfacesOf<T>().Where(HasMicroserviceAttribute);
+
+            if (microserviceInterfaces.Any())
+            {
+                var commandHandlerList =
+                    from Interface in microserviceInterfaces
                     from interfaceMethod in Interface.GetMethods()
                     where interfaceMethod.GetParameters().Length == 1
                     let commandType = GetCommandType(interfaceMethod)
                     select new KeyValuePair<string, CommandHandler<T>>
-                    (
-                        commandType.FullName,
-                        new CommandHandler<T>(interfaceMethod, commandType)
-                    );
+                (
+                    commandType.FullName,
+                    new CommandHandler<T>(interfaceMethod, commandType)
+                );
 
-            ServiceModel.Add(commandHandlerList);  
+                ServiceModel.Add(commandHandlerList);
+            }
+            else
+            {
+                throw new MicroserviceConfigurationException("No [MicroService] interfaces have been found.");
+            }
         }
         #region PopulateDispatcherModel() - helper methods
         private static Type[] AllInterfacesOf<U>()
@@ -91,10 +100,24 @@ namespace InfoSupport.WSA.Infrastructure
 
         private void EventReceived(object sender, BasicDeliverEventArgs e)
         {
-            var instance = _instance ?? new T();    // InstanceContext=SingleCall
+            var instance = _instance ?? new T();    // InstanceContext=Singleton ?? SingleCall
             var eventType = e.BasicProperties.Type;
             var message = Encoding.UTF8.GetString(e.Body);
-            ServiceModel.DispatchCall(instance, eventType, message);
+
+            var responseMessage = ServiceModel.DispatchCall(instance, eventType, message);
+
+            //if (e.BasicProperties.ReplyTo != null)
+            {
+                // set metadata
+                var props = Channel.CreateBasicProperties();
+                // set payload
+                var responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
+                // publish event
+                Channel.BasicPublish(exchange: "",
+                                     routingKey: e.BasicProperties.ReplyTo,
+                                     basicProperties: props,
+                                     body: responseBuffer);
+            }
         }
     }
 }

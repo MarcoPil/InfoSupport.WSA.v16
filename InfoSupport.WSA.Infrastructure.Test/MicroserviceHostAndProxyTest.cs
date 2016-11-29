@@ -21,8 +21,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var command = new SomeCommand() { SomeValue = "teststring" };
                 proxy.Execute(command);
 
-                Thread.Sleep(500);
-
+                serviceMock.receivedFlag.WaitOne(500);
                 Assert.False(serviceMock.SomeCommandHandlerHasBeenCalled);
             }
         }
@@ -38,8 +37,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var command = new TestCommand();
                 proxy.Execute(command);
 
-                Thread.Sleep(500);
-
+                serviceMock.receivedFlag.WaitOne(500);
                 Assert.True(serviceMock.TestCommandHandlerHasBeenCalled);
             }
         }

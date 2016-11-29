@@ -15,11 +15,13 @@ namespace InfoSupport.WSA.Infrastructure
             _commandType = commandType;
         }
 
-        internal void DispatchCall(T instance, string jsonMessage)
+        internal string DispatchCall(T instance, string jsonMessage)
         {
             var command = JsonConvert.DeserializeObject(jsonMessage, _commandType);
+            
+            var response = _method.Invoke(instance, new object[] { command });
 
-            _method.Invoke(instance, new object[] { command });
+            return JsonConvert.SerializeObject(response);
         }
     }
 }

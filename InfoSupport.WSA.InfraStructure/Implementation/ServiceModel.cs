@@ -35,12 +35,13 @@ namespace InfoSupport.WSA.Infrastructure
             }
         }
 
-        internal void DispatchCall(T instance, string eventName, string jsonMessage)
+        internal string DispatchCall(T instance, string eventName, string jsonMessage)
         {
             if (_handlers.ContainsKey(eventName))
             {
-                _handlers[eventName].DispatchCall(instance, jsonMessage);
+                return _handlers[eventName].DispatchCall(instance, jsonMessage);
             }
+            return null; // TODO
         }
     }
 }
