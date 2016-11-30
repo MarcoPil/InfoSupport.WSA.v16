@@ -66,7 +66,7 @@ namespace InfoSupport.WSA.Infrastructure
                 }
                 else
                 {
-                    throw new MicroserviceConfigurationException("No Handlers can be found In the Microservice Interface.");
+                    throw new MicroserviceConfigurationException("No Handlers can be found in the Microservice interface.");
                 }
             }
             else

@@ -23,7 +23,14 @@ namespace InfoSupport.WSA.Infrastructure
                 UserName = BusOptions.UserName,
                 Password = BusOptions.Password,
             };
-            _connection = factory.CreateConnection();
+            try
+            {
+                _connection = factory.CreateConnection();
+            }
+            catch
+            {
+                throw new MicroserviceConfigurationException("The Eventbus (RabbitMQ service) cannot be reached.");
+            }
             Channel = _connection.CreateModel();
 
             Channel.ExchangeDeclare(exchange: BusOptions.ExchangeName,

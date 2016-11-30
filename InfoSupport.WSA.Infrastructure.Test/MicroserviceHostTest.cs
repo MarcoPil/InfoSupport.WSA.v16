@@ -68,7 +68,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var options = new BusOptions() { QueueName = "microserviceQueue" };
                 var command = new SomeCommand() { SomeValue = "teststring" };
                 SendMessage(command, options);
-                Thread.Sleep(500);
+                serviceMock.ReceivedFlag.WaitOne(500);
 
                 Assert.True(serviceMock.SomeCommandHandlerHasBeenCalled);
                 Assert.False(serviceMock.TestCommandHandlerHasBeenCalled);
@@ -84,7 +84,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var options = new BusOptions() { QueueName = "microserviceQueue" };
                 var command = new KeyValuePair<string, int>("Test", 42);
                 SendMessage(command, options);
-                Thread.Sleep(500);
+                serviceMock.ReceivedFlag.WaitOne(500);
 
                 Assert.False(serviceMock.SomeCommandHandlerHasBeenCalled);
                 Assert.False(serviceMock.TestCommandHandlerHasBeenCalled);
@@ -123,28 +123,44 @@ namespace InfoSupport.WSA.Infrastructure.Test
         [Fact]
         public void MicroserviceHostWithoutMicroServiceAttributeFails()
         {
-            MicroserviceConfigurationException ex = 
-                Assert.Throws<MicroserviceConfigurationException>( () =>
-                {
-                    using (var host = new MicroserviceHost<BusOptions>())
-                    {
-                    }
-                });
+            MicroserviceConfigurationException ex =
+                Assert.Throws<MicroserviceConfigurationException>(() =>
+               {
+                   using (var host = new MicroserviceHost<BusOptions>())
+                   {
+                   }
+               });
             Assert.Equal("No [MicroService] interfaces have been found.", ex.Message);
         }
 
-        [Fact]
-        public void MicroserviceHostWithoutHandlersFails()
-        {
-            var serviceMock = new EmptyServiceMock();
-            MicroserviceConfigurationException ex =
-                Assert.Throws<MicroserviceConfigurationException>(() =>
-                {
-                    using (var host = new MicroserviceHost<EmptyServiceMock>(serviceMock))
-                    {
-                    }
-                });
-            Assert.Equal("No Handlers can be found In the Microservice Interface.", ex.Message);
-        }
+        //[Fact]
+        //public void MicroserviceHostWithoutHandlersFails()
+        //{
+        //    var serviceMock = new EmptyServiceMock();
+        //    MicroserviceConfigurationException ex =
+        //        Assert.Throws<MicroserviceConfigurationException>(() =>
+        //        {
+        //            using (var host = new MicroserviceHost<EmptyServiceMock>(serviceMock))
+        //            {
+        //            }
+        //        });
+        //    Assert.Equal("No Handlers can be found in the Microservice interface.", ex.Message);
+        //}
+
+
+        //[Fact]
+        //public void MicroserviceHostFailsIfRabbitMQIsNotReachable()
+        //{
+        //    var serviceMock = new EmptyServiceMock();
+        //    var options = new BusOptions { HostName = "NonExistingName" };
+        //    MicroserviceConfigurationException ex =
+        //        Assert.Throws<MicroserviceConfigurationException>(() =>
+        //        {
+        //            using (var host = new MicroserviceHost<EmptyServiceMock>(serviceMock, options))
+        //            {
+        //            }
+        //        });
+        //    Assert.Equal("The Eventbus (RabbitMQ service) cannot be reached.", ex.Message);
+        //}
     }
 }

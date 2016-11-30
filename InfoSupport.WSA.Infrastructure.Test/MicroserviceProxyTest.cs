@@ -38,7 +38,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
                 var command = new SomeCommand() { SomeValue = "teststring" };
                 proxy.Execute(command);
 
-                Thread.Sleep(500);
+                serviceMock.ReceivedFlag.WaitOne(500);
 
                 Assert.True(serviceMock.SomeCommandHandlerHasBeenCalled);
                 Assert.Equal("teststring", serviceMock.SomeCommandHandlerReceivedSomeCommand.SomeValue);
