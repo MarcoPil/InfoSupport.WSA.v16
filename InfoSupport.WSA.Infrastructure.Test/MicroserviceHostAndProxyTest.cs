@@ -18,6 +18,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var host = new MicroserviceHost<HalfServiceMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))
             {
+                host.Open();
+
                 var command = new SomeCommand() { SomeValue = "teststring" };
                 proxy.Execute(command);
 
@@ -34,6 +36,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var host = new MicroserviceHost<HalfServiceMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))
             {
+                host.Open();
+
                 var command = new TestCommand();
                 proxy.Execute(command);
 

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace InfoSupport.WSA.Infrastructure
 {
-    public class MicroserviceHost<T> : EventBusBase
+    public class MicroserviceHost<T> : ServiceBusBase
         where T: class, new()
     {
         private T _instance;
@@ -25,7 +25,6 @@ namespace InfoSupport.WSA.Infrastructure
             ServiceModel = new ServiceModel<T>();
             AddQueueNamesToServiceModel();
             AddCommandHandlersToServiceModel();
-            StartListening();
         }
 
         private void AddQueueNamesToServiceModel()
@@ -47,7 +46,11 @@ namespace InfoSupport.WSA.Infrastructure
         {
             var microserviceInterfaces = AllInterfacesOf<T>().Where(HasMicroserviceAttribute);
 
-            if (microserviceInterfaces.Any())
+            if (!microserviceInterfaces.Any())
+            {
+                throw new MicroserviceConfigurationException("No [MicroService] interfaces have been found.");
+            }
+            else
             {
                 var commandHandlerList =
                     from Interface in microserviceInterfaces
@@ -60,21 +63,18 @@ namespace InfoSupport.WSA.Infrastructure
                     new CommandHandler<T>(interfaceMethod, commandType)
                 );
 
-                if (commandHandlerList.Any())
-                {
-                    ServiceModel.Add(commandHandlerList);
-                }
-                else
+                if (!commandHandlerList.Any())
                 {
                     throw new MicroserviceConfigurationException("No Handlers can be found in the Microservice interface.");
                 }
+                else
+                {
+                    ServiceModel.Add(commandHandlerList);
+                }
             }
-            else
-            {
-                throw new MicroserviceConfigurationException("No [MicroService] interfaces have been found.");
-            }
+
         }
-        #region PopulateDispatcherModel() - helper methods
+        #region PopulateServiceModel() - helper methods
         private static Type[] AllInterfacesOf<U>()
         {
             return typeof(U).GetInterfaces();
@@ -87,10 +87,13 @@ namespace InfoSupport.WSA.Infrastructure
         {
             return method.GetParameters().First().ParameterType;
         }
-        #endregion PopulateDispatcherModel() - helper methods
+        #endregion PopulateServiceModel() - helper methods
 
-        private void StartListening()
+        public override void Open()
         {
+            // Open a RabbitMQ connection
+            base.Open();
+
             foreach (var queueName in ServiceModel.QueueNames)
             {
                 Channel.QueueDeclare(queue:queueName, 
@@ -113,7 +116,7 @@ namespace InfoSupport.WSA.Infrastructure
 
             var responseMessage = ServiceModel.DispatchCall(instance, eventType, message);
 
-            //if (e.BasicProperties.ReplyTo != null)
+            if (e.BasicProperties.ReplyTo != null)
             {
                 // set metadata
                 var props = Channel.CreateBasicProperties();

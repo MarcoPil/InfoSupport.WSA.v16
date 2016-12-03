@@ -17,6 +17,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var host = new MicroserviceHost<CallbackMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))
             {
+                host.Open();
+
                 RequestCommand requestCommand = new RequestCommand { Name = "Marco" };
                 TestResponse response = proxy.Execute<TestResponse>(requestCommand);
 
@@ -32,6 +34,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var host = new MicroserviceHost<CallbackMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))
             {
+                host.Open();
+
                 RequestCommand requestCommand = new RequestCommand { Name = "Marco" };
                 SlowRequestCommand slowCommand = new SlowRequestCommand { Name = "Slow" };
 
