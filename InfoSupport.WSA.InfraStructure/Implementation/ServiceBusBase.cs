@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace InfoSupport.WSA.Infrastructure
 {
-    public abstract class ServiceBusBase : IDisposable
+    public abstract class EventBusBase : IDisposable
     {
         private IConnection _connection;
         protected IModel Channel;
         public BusOptions BusOptions { get; }
 
-        public ServiceBusBase(BusOptions options = null)
+        public EventBusBase(BusOptions options = null)
         {
             BusOptions = options ?? new BusOptions();
         }

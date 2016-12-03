@@ -18,8 +18,6 @@ namespace InfoSupport.WSA.Infrastructure
         {
             DispatcherModel = new DispatcherModel();
             PopulateDispatcherModel();
-
-            StartListening(BusOptions.QueueName);
         }
 
         private void PopulateDispatcherModel()
@@ -49,8 +47,14 @@ namespace InfoSupport.WSA.Infrastructure
                 }
             }
         }
-        private void StartListening(string queueName)
+
+        public override void Open()
         {
+            // Open a RabbitMQ connection
+            base.Open();
+
+            // Start listening for incomning commands
+            string queueName = BusOptions.QueueName;
             if (queueName == null)
             {
                 queueName = Channel.QueueDeclare().QueueName;

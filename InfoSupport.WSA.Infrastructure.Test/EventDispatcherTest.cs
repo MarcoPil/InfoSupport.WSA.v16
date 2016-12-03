@@ -25,6 +25,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher())
             using (var target = new EventDispatcherMock())
             {
+                target.Open();
+
                 publisher.Publish(new TestEvent());
 
                 Thread.Sleep(100);
@@ -39,6 +41,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher())
             using (var target = new EventDispatcherMock())
             {
+                target.Open();
+
                 publisher.Publish(new AnotherEvent());
 
                 Thread.Sleep(100);
@@ -54,6 +58,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher())
             using (var target = new EventDispatcherMock())
             {
+                target.Open();
+
                 publisher.Publish(new AnotherEvent() { SomeValue = 7 } );
 
                 Thread.Sleep(100);
@@ -68,6 +74,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher())
             using (var target = new EventDispatcherMock())
             {
+                target.Open();
+
                 var evt = new TestEvent();
                 publisher.Publish(evt);
 

@@ -10,6 +10,7 @@ public class MicroserviceProxy : EventBusBase
 {
     public MicroserviceProxy(BusOptions options = null) : base(options)
     {
+        Open();
     }
 
     public void Execute(object command)

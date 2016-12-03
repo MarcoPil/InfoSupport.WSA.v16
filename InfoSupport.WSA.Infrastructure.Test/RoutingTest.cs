@@ -27,6 +27,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher(options))
             using (var target = new RoutedDispatherMock(options))
             {
+                target.Open();
+
                 publisher.Publish(new RoutedEvent());
 
                 Thread.Sleep(100);
@@ -44,6 +46,8 @@ namespace InfoSupport.WSA.Infrastructure.Test
             using (var publisher = new EventPublisher(options))
             using (var target = new RoutedDispatherMock(options))
             {
+                target.Open();
+
                 publisher.Publish(new TestEvent());
 
                 Thread.Sleep(100);

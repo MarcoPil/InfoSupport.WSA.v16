@@ -9,7 +9,7 @@ using System.Text;
 
 namespace InfoSupport.WSA.Infrastructure
 {
-    public class MicroserviceHost<T> : ServiceBusBase
+    public class MicroserviceHost<T> : EventBusBase
         where T: class, new()
     {
         private T _instance;
@@ -93,7 +93,8 @@ namespace InfoSupport.WSA.Infrastructure
         {
             // Open a RabbitMQ connection
             base.Open();
-
+            
+            // Start listening for incomning commands
             foreach (var queueName in ServiceModel.QueueNames)
             {
                 Channel.QueueDeclare(queue:queueName, 
