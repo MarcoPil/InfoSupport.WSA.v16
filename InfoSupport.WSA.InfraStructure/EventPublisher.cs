@@ -18,7 +18,15 @@ namespace InfoSupport.WSA.Infrastructure
         /// <param name="options">the configuration of the RabbitMQ connection. If none are passed, the default BusOptions are being used.</param>
         public EventPublisher(BusOptions options = null) : base(options)
         {
-            Open();
+            try
+            {
+                Open();
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         /// <summary>
