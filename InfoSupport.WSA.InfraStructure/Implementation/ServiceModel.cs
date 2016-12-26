@@ -35,13 +35,20 @@ namespace InfoSupport.WSA.Infrastructure
             }
         }
 
-        internal string DispatchCall(T instance, string eventName, string jsonMessage)
+        internal ServiceResponse DispatchCall(T instance, string eventName, string jsonMessage)
         {
-            if (_handlers.ContainsKey(eventName))
+            try
             {
-                return _handlers[eventName].DispatchCall(instance, jsonMessage);
+                if (_handlers.ContainsKey(eventName))
+                {
+                    return _handlers[eventName].DispatchCall(instance, jsonMessage);
+                }
+                return new ServiceResponse($"Unkown command name: {eventName}", ResponseType.InternalError);
             }
-            return null; // TODO
+            catch (Exception ex)
+            {
+                return new ServiceResponse(ex.Message, ResponseType.InternalError);
+            }
         }
     }
 }

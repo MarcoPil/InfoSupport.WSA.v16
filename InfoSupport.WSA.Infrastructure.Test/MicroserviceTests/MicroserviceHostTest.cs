@@ -151,6 +151,21 @@ namespace InfoSupport.WSA.Infrastructure.Test
         }
 
         [Fact]
+        public void MicroserviceHostWithoutConfiguredQueueNameFails()
+        {
+            var serviceMock = new ServiceWithoutQueueMock();
+            MicroserviceConfigurationException ex =
+                Assert.Throws<MicroserviceConfigurationException>(() =>
+                {
+                    using (var host = new MicroserviceHost<ServiceWithoutQueueMock>(serviceMock))
+                    {
+                        host.Open();
+                    }
+                });
+            Assert.Equal("No queue name is configured in the MicroserviceAtrribute on any Microservice interface nor in the Busoptions.", ex.Message);
+        }
+        
+        [Fact]
         public void MicroserviceHostFailsIfRabbitMQIsNotReachable()
         {
             var serviceMock = new SomeMicroserviceMock();

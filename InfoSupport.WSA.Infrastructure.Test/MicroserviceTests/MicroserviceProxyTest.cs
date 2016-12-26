@@ -13,7 +13,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
         [Fact]
         public void ProxySendsCommands()
         {
-            var options = new BusOptions() { QueueName = "OtherQueue" };
+            var options = new BusOptions() { QueueName = "ProxyTestQueue01" };
             var serviceMock = new OtherMicroserviceMock();
             using (var host = new MicroserviceHost<OtherMicroserviceMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))
@@ -32,7 +32,7 @@ namespace InfoSupport.WSA.Infrastructure.Test
         [Fact]
         public void ProxySendsCommandsAndTheyAreReceivedCorrectly()
         {
-            var options = new BusOptions() { QueueName = "OtherQueue" };
+            var options = new BusOptions() { QueueName = "ProxyTestQueue02" };
             var serviceMock = new OtherMicroserviceMock();
             using (var host = new MicroserviceHost<OtherMicroserviceMock>(serviceMock, options))
             using (var proxy = new MicroserviceProxy(options))

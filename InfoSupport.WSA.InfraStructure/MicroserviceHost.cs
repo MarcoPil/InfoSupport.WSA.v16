@@ -9,6 +9,11 @@ using System.Text;
 
 namespace InfoSupport.WSA.Infrastructure
 {
+    /// <summary>
+    /// Provides a host for microservices.
+    /// Communication is done through RabbitMQ RPC calls. This Host listens for commands on all queues that are configured in the [Microservce(queueName)] atttributes and the queue name that is configured in the BusOptions
+    /// </summary>
+    /// <typeparam name="T">The type of the implementation of the Microserice</typeparam>
     public class MicroserviceHost<T> : EventBusBase
         where T: class, new()
     {
@@ -91,6 +96,11 @@ namespace InfoSupport.WSA.Infrastructure
 
         public override void Open()
         {
+            if (!ServiceModel.QueueNames.Any())
+            {
+                throw new MicroserviceConfigurationException("No queue name is configured in the MicroserviceAtrribute on any Microservice interface nor in the Busoptions.");
+            }
+
             // Open a RabbitMQ connection
             base.Open();
             
@@ -113,19 +123,30 @@ namespace InfoSupport.WSA.Infrastructure
         {
             var instance = _instance ?? new T();    // InstanceContext=Singleton ?? SingleCall
             var eventType = e.BasicProperties.Type;
+            var replyTo = e.BasicProperties.ReplyTo;
             var message = Encoding.UTF8.GetString(e.Body);
 
-            var responseMessage = ServiceModel.DispatchCall(instance, eventType, message);
+            ServiceResponse responseMessage = ServiceModel.DispatchCall(instance, eventType, message);
 
-            if (e.BasicProperties.ReplyTo != null)
+            SendResponse(replyTo, responseMessage);
+        }
+
+        private void SendResponse(string replyTo, ServiceResponse serviceResponse)
+        {
+            if (replyTo != null)
             {
                 // set metadata
                 var props = Channel.CreateBasicProperties();
+                props.ContentType = serviceResponse.ResponseType.ToString();
+                props.Type = serviceResponse.TypeName;
+                //props.ReplyTo = "HEEE";
+                
                 // set payload
+                var responseMessage = JsonConvert.SerializeObject(serviceResponse.Value);
                 var responseBuffer = Encoding.UTF8.GetBytes(responseMessage);
                 // publish event
                 Channel.BasicPublish(exchange: "",
-                                     routingKey: e.BasicProperties.ReplyTo,
+                                     routingKey: replyTo,
                                      basicProperties: props,
                                      body: responseBuffer);
             }

@@ -18,5 +18,24 @@ namespace InfoSupport.WSA.Infrastructure.Test.ExceptionsOverRabbitMqTests
         //        proxy.Execute()
         //    }
         //}
+
+        [Fact]
+        public void MicroServiceThrowsException()
+        {
+            // Arrange
+            var options = new BusOptions() { QueueName = "ExceptionThrowingTest01" };
+            using (var host = new MicroserviceHost<ExceptionThrowingService>(options))
+            using (var proxy = new MicroserviceProxy(options))
+            {
+                host.Open();
+
+                // Act
+                WorkCommand command = new WorkCommand { Name = "Marco" };
+                Action action = () => proxy.Execute(command);
+
+                // Assert
+                Assert.Throws<NotImplementedException>(action);
+            }
+        }
     }
 }

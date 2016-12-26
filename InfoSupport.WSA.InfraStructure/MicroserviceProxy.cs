@@ -32,7 +32,8 @@ public class MicroserviceProxy : EventBusBase
                              durable: false, exclusive: false, autoDelete: false, arguments: null);
         var callbackQueueName = Channel.QueueDeclare().QueueName;
         EventWaitHandle responseReceived = new AutoResetEvent(false);
-        T result = default(T);
+        BasicDeliverEventArgs callback = null;
+//        T result = default(T);
 
         // set metadata
         var props = Channel.CreateBasicProperties();
@@ -47,23 +48,44 @@ public class MicroserviceProxy : EventBusBase
         var consumer = new EventingBasicConsumer(Channel);
         consumer.Received += (object sender, BasicDeliverEventArgs e) =>
         {
-            var eventType = e.BasicProperties.Type;
-            string body = Encoding.UTF8.GetString(e.Body);
-            result = JsonConvert.DeserializeObject<T>(body);
+            callback = e;
             responseReceived.Set();
         };
-
         Channel.BasicConsume(queue: callbackQueueName,
                              noAck: true,
                              consumer: consumer);
 
+        // Send Command
         Channel.BasicPublish(exchange: "",
                              routingKey: BusOptions.QueueName,
                              basicProperties: props,
                              body: buffer);
 
+        // Wait for result
         responseReceived.WaitOne();
-        return result;
-    }
 
+        var responseType = callback.BasicProperties.ContentType;
+        var eventType = callback.BasicProperties.Type;
+        string body = Encoding.UTF8.GetString(callback.Body);
+        switch (responseType)
+        {
+            case "OK":
+                if (eventType == "void")
+                {
+                    return default(T);
+                }
+                else
+                {
+                    var result = JsonConvert.DeserializeObject<T>(body);
+                    return result; 
+                }
+            case "FunctionalException":
+                var ex = (Exception) JsonConvert.DeserializeObject(body, Type.GetType(eventType));
+                throw ex;
+            case "InternalError":
+                throw new MicroserviceException(body);
+            default:
+                throw new MicroserviceException($"Unknown response type: {responseType}");
+        }
+    }
 }

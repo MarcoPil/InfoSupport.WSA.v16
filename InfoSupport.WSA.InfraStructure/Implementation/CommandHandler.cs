@@ -15,13 +15,20 @@ namespace InfoSupport.WSA.Infrastructure
             _commandType = commandType;
         }
 
-        internal string DispatchCall(T instance, string jsonMessage)
+        internal ServiceResponse DispatchCall(T instance, string jsonMessage)
         {
             var command = JsonConvert.DeserializeObject(jsonMessage, _commandType);
-            
-            var response = _method.Invoke(instance, new object[] { command });
 
-            return JsonConvert.SerializeObject(response);
+            try
+            {
+                var response = _method.Invoke(instance, new object[] { command });
+
+                return new ServiceResponse(response, ResponseType.OK); 
+            }
+            catch (TargetInvocationException ex)
+            {
+                return new ServiceResponse(ex.InnerException, ResponseType.FunctionalException);
+            }
         }
     }
 }
