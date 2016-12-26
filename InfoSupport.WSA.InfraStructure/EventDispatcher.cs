@@ -14,7 +14,7 @@ namespace InfoSupport.WSA.Infrastructure
     {
         public DispatcherModel DispatcherModel { get; }
 
-        public EventDispatcher(BusOptions options = null) : base(options)
+        public EventDispatcher(BusOptions options = default(BusOptions)) : base(options)
         {
             DispatcherModel = new DispatcherModel();
             PopulateDispatcherModel();

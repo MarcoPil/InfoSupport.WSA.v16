@@ -16,7 +16,7 @@ namespace InfoSupport.WSA.Infrastructure
         /// Each EventPublisher creates its own connection to rabbitMQ.
         /// </summary>
         /// <param name="options">the configuration of the RabbitMQ connection. If none are passed, the default BusOptions are being used.</param>
-        public EventPublisher(BusOptions options = null) : base(options)
+        public EventPublisher(BusOptions options = default(BusOptions)) : base(options)
         {
             try
             {

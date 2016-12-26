@@ -12,7 +12,7 @@ namespace InfoSupport.WSA.Infrastructure
         protected IModel Channel;
         public BusOptions BusOptions { get; }
 
-        public EventBusBase(BusOptions options = null)
+        public EventBusBase(BusOptions options = default(BusOptions))
         {
             BusOptions = options ?? new BusOptions();
         }

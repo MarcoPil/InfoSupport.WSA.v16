@@ -8,7 +8,7 @@ using System.Threading;
 
 public class MicroserviceProxy : EventBusBase
 {
-    public MicroserviceProxy(BusOptions options = null) : base(options)
+    public MicroserviceProxy(BusOptions options = default(BusOptions)) : base(options)
     {
         try
         {
