@@ -1,4 +1,6 @@
-﻿using InfoSupport.WSA.Infrastructure.Test.dummies;
+﻿using InfoSupport.WSA.Infrastructure;
+using InfoSupport.WSA.Infrastructure.Test;
+using InfoSupport.WSA.Infrastructure.Test.dummies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,83 +8,80 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace InfoSupport.WSA.Infrastructure.Test
+public class EventDispatcherTest
 {
-    public class EventDispatcherTest
+    [Fact]
+    public void EventDispatcherFindsDispatchMethods()
     {
-        [Fact]
-        public void EventDispatcherFindsDispatchMethods()
+        using (var result = new EventDispatcherMock())
         {
-            using (var result = new EventDispatcherMock())
-            {
-                Assert.Equal(2, result.DispatcherModel.Handlers.Count());
-            }
+            Assert.Equal(2, result.DispatcherModel.Handlers.Count());
         }
+    }
 
-        [Fact]
-        public void EventDispatcherDispatchesEvents()
+    [Fact]
+    public void EventDispatcherDispatchesEvents()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new EventDispatcherMock())
         {
-            using (var publisher = new EventPublisher())
-            using (var target = new EventDispatcherMock())
-            {
-                target.Open();
+            target.Open();
 
-                publisher.Publish(new TestEvent());
+            publisher.Publish(new TestEvent());
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.True(target.TestEventHandlerHasBeenCalled);
-            }
+            Assert.True(target.TestEventHandlerHasBeenCalled);
         }
+    }
 
-        [Fact]
-        public void EventDispatcherDispatchesToCorrectEventHanlder()
+    [Fact]
+    public void EventDispatcherDispatchesToCorrectEventHanlder()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new EventDispatcherMock())
         {
-            using (var publisher = new EventPublisher())
-            using (var target = new EventDispatcherMock())
-            {
-                target.Open();
+            target.Open();
 
-                publisher.Publish(new AnotherEvent());
+            publisher.Publish(new AnotherEvent());
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.False(target.TestEventHandlerHasBeenCalled);
-                Assert.True(target.AnotherEventHandlerHasBeenCalled);
-            }
+            Assert.False(target.TestEventHandlerHasBeenCalled);
+            Assert.True(target.AnotherEventHandlerHasBeenCalled);
         }
+    }
 
-        [Fact]
-        public void EventDispatcherDispatchesEventWithCorrectData()
+    [Fact]
+    public void EventDispatcherDispatchesEventWithCorrectData()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new EventDispatcherMock())
         {
-            using (var publisher = new EventPublisher())
-            using (var target = new EventDispatcherMock())
-            {
-                target.Open();
+            target.Open();
 
-                publisher.Publish(new AnotherEvent() { SomeValue = 7 } );
+            publisher.Publish(new AnotherEvent() { SomeValue = 7 });
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.Equal(7, target.SomeValue);
-            }
+            Assert.Equal(7, target.SomeValue);
         }
+    }
 
-        [Fact]
-        public void EventDispatcherDispatchesEventWithCorrectTimestamp()
+    [Fact]
+    public void EventDispatcherDispatchesEventWithCorrectTimestamp()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new EventDispatcherMock())
         {
-            using (var publisher = new EventPublisher())
-            using (var target = new EventDispatcherMock())
-            {
-                target.Open();
+            target.Open();
 
-                var evt = new TestEvent();
-                publisher.Publish(evt);
+            var evt = new TestEvent();
+            publisher.Publish(evt);
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.Equal(evt.Timestamp, target.SomeTimestamp);
-            }
+            Assert.Equal(evt.Timestamp, target.SomeTimestamp);
         }
     }
 }

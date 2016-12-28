@@ -1,4 +1,6 @@
-﻿using InfoSupport.WSA.Infrastructure.Test.dummies;
+﻿using InfoSupport.WSA.Infrastructure;
+using InfoSupport.WSA.Infrastructure.Test;
+using InfoSupport.WSA.Infrastructure.Test.dummies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,55 +8,52 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace InfoSupport.WSA.Infrastructure.Test
+public class RoutingTest
 {
-    public class RoutingTest
+    [Fact]
+    public void RoutingKeysAreRegistered()
     {
-        [Fact]
-        public void RoutingKeysAreRegistered()
+        using (var result = new RoutedDispatherMock())
         {
-            using (var result = new RoutedDispatherMock())
-            {
-                Assert.Contains("WSA.Routed.*", result.DispatcherModel.RoutingKeys);
-                Assert.Contains("Multiple.#", result.DispatcherModel.RoutingKeys);
-            }
+            Assert.Contains("WSA.Routed.*", result.DispatcherModel.RoutingKeys);
+            Assert.Contains("Multiple.#", result.DispatcherModel.RoutingKeys);
         }
+    }
 
-        [Fact]
-        public void RoutingKeyWorksWithAllowingKey()
+    [Fact]
+    public void RoutingKeyWorksWithAllowingKey()
+    {
+        BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
+        using (var publisher = new EventPublisher(options))
+        using (var target = new RoutedDispatherMock(options))
         {
-            BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
-            using (var publisher = new EventPublisher(options))
-            using (var target = new RoutedDispatherMock(options))
-            {
-                target.Open();
+            target.Open();
 
-                publisher.Publish(new RoutedEvent());
+            publisher.Publish(new RoutedEvent());
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.False(target.TestEventHandlerHasBeenCalled, "TestEventHandler should NOT have been called");
-                Assert.True(target.RoutedEventHandlerHasBeenCalled, "RoutedEventHandler SHOULD have been called");
-            }
+            Assert.False(target.TestEventHandlerHasBeenCalled, "TestEventHandler should NOT have been called");
+            Assert.True(target.RoutedEventHandlerHasBeenCalled, "RoutedEventHandler SHOULD have been called");
         }
+    }
 
 
-        [Fact]
-        public void RoutingKeyWorksWithNonAllowingKey()
+    [Fact]
+    public void RoutingKeyWorksWithNonAllowingKey()
+    {
+        BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
+        using (var publisher = new EventPublisher(options))
+        using (var target = new RoutedDispatherMock(options))
         {
-            BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
-            using (var publisher = new EventPublisher(options))
-            using (var target = new RoutedDispatherMock(options))
-            {
-                target.Open();
+            target.Open();
 
-                publisher.Publish(new TestEvent());
+            publisher.Publish(new TestEvent());
 
-                Thread.Sleep(100);
+            Thread.Sleep(100);
 
-                Assert.False(target.TestEventHandlerHasBeenCalled, "TestEventHandler should NOT have been called");
-                Assert.False(target.RoutedEventHandlerHasBeenCalled, "RoutedEventHandler should NOT have been called");
-            }
+            Assert.False(target.TestEventHandlerHasBeenCalled, "TestEventHandler should NOT have been called");
+            Assert.False(target.RoutedEventHandlerHasBeenCalled, "RoutedEventHandler should NOT have been called");
         }
     }
 }

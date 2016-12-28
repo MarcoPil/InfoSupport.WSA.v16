@@ -1,4 +1,6 @@
-﻿namespace InfoSupport.WSA.Infrastructure
+﻿using Newtonsoft.Json;
+
+namespace InfoSupport.WSA.Infrastructure
 {
     /// <summary>
     /// The BusOptions are used for configuring a connection to RabbitMQ.
@@ -42,6 +44,11 @@
             Port = 5672;
             UserName = "guest";
             Password = "guest";
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }
