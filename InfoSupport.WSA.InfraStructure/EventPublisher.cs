@@ -36,16 +36,25 @@ namespace InfoSupport.WSA.Infrastructure
         /// <param name="domainEvent">The domain event to be published. </param>
         public void Publish(DomainEvent domainEvent)
         {
-                // set metadata
-                var props = Channel.CreateBasicProperties();
-                props.Timestamp = new AmqpTimestamp(domainEvent.Timestamp);
-                props.Type = domainEvent.GetType().FullName;
-                // set payload
-                string message = JsonConvert.SerializeObject(domainEvent);
-                var buffer = Encoding.UTF8.GetBytes(message);
-                // publish event
-                Channel.BasicPublish(exchange: BusOptions.ExchangeName,
-                                     routingKey: domainEvent.RoutingKey,
+            PublishRawMessage(
+                timestamp:   domainEvent.Timestamp, 
+                routingKey:  domainEvent.RoutingKey,
+                eventType:   domainEvent.GetType().FullName, 
+                jsonMessage: JsonConvert.SerializeObject(domainEvent)
+            );
+        }
+
+        private void PublishRawMessage(long timestamp, string routingKey, string eventType, string jsonMessage)
+        {
+            // set metadata
+            var props = Channel.CreateBasicProperties();
+            props.Timestamp = new AmqpTimestamp(timestamp);
+            props.Type = eventType;
+            // set payload
+            var buffer = Encoding.UTF8.GetBytes(jsonMessage);
+            // publish event
+            Channel.BasicPublish(exchange: BusOptions.ExchangeName,
+                                     routingKey: routingKey,
                                      basicProperties: props,
                                      body: buffer);
         }
