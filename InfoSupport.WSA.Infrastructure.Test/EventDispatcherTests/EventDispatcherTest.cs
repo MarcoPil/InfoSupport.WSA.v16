@@ -84,4 +84,55 @@ public class EventDispatcherTest
             Assert.Equal(evt.Timestamp, target.SomeTimestamp);
         }
     }
+
+    [Fact]
+    public void EventDispatcherFindsDefaultDispatcherMethod()
+    {
+        using (var result = new DefaultingDispatcherMock())
+        {
+            Assert.Equal(1, result.DispatcherModel.Handlers.Count());
+            Assert.Equal("default", result.DispatcherModel.Handlers.ElementAt(0));
+        }
+    }
+
+    [Fact]
+    public void DefaultingDispatcherDispatchesToDefaultHandler()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new DefaultingDispatcherMock())
+        {
+            target.Open();
+
+            var evt = new TestEvent();
+            publisher.Publish(evt);
+
+            Thread.Sleep(100);
+
+            Assert.Equal(true, target.DefaultHandlerHasBeenCalled);
+        }
+    }
+
+
+    [Fact]
+    public void DefaultingDispatcherDeserializesCorrectly()
+    {
+        using (var publisher = new EventPublisher())
+        using (var target = new DefaultingDispatcherMock())
+        {
+            target.Open();
+
+            var evt = new AnotherEvent() { SomeValue = 7 };
+            publisher.Publish(evt);
+
+            Thread.Sleep(100);
+
+            Assert.Equal(true, target.DefaultHandlerHasBeenCalled);
+
+            Assert.Equal(7, target.DefaultHandlerObject.Value<int>("SomeValue"));
+            Assert.Equal("Dummy.AnotherEvent", target.DefaultHandlerObject.Value<string>("RoutingKey"));
+            Assert.Equal(evt.Timestamp, target.DefaultHandlerObject.Value<long>("Timestamp"));
+            Assert.Equal("InfoSupport.WSA.Infrastructure.Test.dummies.AnotherEvent", target.DefaultHandlerObject.Value<string>("TypeName"));
+
+        }
+    }
 }

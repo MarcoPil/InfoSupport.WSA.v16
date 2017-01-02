@@ -44,6 +44,12 @@ namespace InfoSupport.WSA.Infrastructure
                             paramType.FullName,
                             new DispatchHandler(this, method, paramType));
                     }
+                    if (paramType == typeof(Newtonsoft.Json.Linq.JObject))
+                    {
+                        DispatcherModel.AddHandler(
+                            "default",
+                            new DispatchHandler(this, method, typeof(object)));
+                    }
                 }
             }
         }

@@ -7,9 +7,9 @@ namespace InfoSupport.WSA.Infrastructure.Test.dummies
 {
     [RoutingKey("WSA.Routed.*")]
     [RoutingKey("Multiple.#")]
-    public class RoutedDispatherMock : EventDispatcher
+    public class RoutedDispatcherMock : EventDispatcher
     {
-        public RoutedDispatherMock(BusOptions options = null) : base(options) { }
+        public RoutedDispatcherMock(BusOptions options = null) : base(options) { }
 
         public bool TestEventHandlerHasBeenCalled = false;
         public bool RoutedEventHandlerHasBeenCalled = false;

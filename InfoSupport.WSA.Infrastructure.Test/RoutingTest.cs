@@ -13,7 +13,7 @@ public class RoutingTest
     [Fact]
     public void RoutingKeysAreRegistered()
     {
-        using (var result = new RoutedDispatherMock())
+        using (var result = new RoutedDispatcherMock())
         {
             Assert.Contains("WSA.Routed.*", result.DispatcherModel.RoutingKeys);
             Assert.Contains("Multiple.#", result.DispatcherModel.RoutingKeys);
@@ -25,7 +25,7 @@ public class RoutingTest
     {
         BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
         using (var publisher = new EventPublisher(options))
-        using (var target = new RoutedDispatherMock(options))
+        using (var target = new RoutedDispatcherMock(options))
         {
             target.Open();
 
@@ -44,7 +44,7 @@ public class RoutingTest
     {
         BusOptions options = new BusOptions { ExchangeName = "TestExchange_RoutingTest" };
         using (var publisher = new EventPublisher(options))
-        using (var target = new RoutedDispatherMock(options))
+        using (var target = new RoutedDispatcherMock(options))
         {
             target.Open();
 

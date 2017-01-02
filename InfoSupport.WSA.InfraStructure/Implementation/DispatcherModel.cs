@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InfoSupport.WSA.Infrastructure
 {
@@ -26,6 +27,14 @@ namespace InfoSupport.WSA.Infrastructure
             if (_handlers.ContainsKey(eventName))
             {
                 _handlers[eventName].DispatchEvent(jsonMessage);
+            }
+            else if (_handlers.ContainsKey("default"))
+            {
+                if (jsonMessage.Last() == '}')
+                {
+                    jsonMessage = jsonMessage.Substring(0, jsonMessage.Length - 1) + $",\"TypeName\":\"{eventName}\"}}";
+                }
+                _handlers["default"].DispatchEvent(jsonMessage);
             }
         }
 
